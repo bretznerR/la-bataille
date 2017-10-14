@@ -1,54 +1,77 @@
 package upmc.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+/**
+ * Created by Raphaël Bretzner on 12/09/2017.
+ */
 public class Joueur {
-    private ArrayList<Carte> uneMain;
-    private String nom;
-    private int score;
 
-    public Joueur(ArrayList uneMain, String nom) {
-        this.uneMain = new ArrayList<Carte>(uneMain);
+    private ArrayList<Carte> cartesEnMain;
+    private int score;
+    private String nom;
+    private boolean estHumain;
+
+    public Joueur() {
+        this.score = 0;
+        this.cartesEnMain = new ArrayList<Carte>();
+        this.estHumain = true;
+    }
+
+    public Joueur(String nom) {
         this.nom = nom;
         this.score = 0;
+        this.cartesEnMain = new ArrayList<Carte>();
+        this.estHumain = true;
     }
 
-    public int getScore() {
-        return score;
+    public Joueur(String nom, boolean estHumain) {
+        this.nom = nom;
+        this.score = 0;
+        this.cartesEnMain = new ArrayList<Carte>();
+        this.estHumain = estHumain;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public Carte jouerCarte() {
+        Carte c = cartesEnMain.get(0);
+        cartesEnMain.remove(cartesEnMain.get(0));
+        return c;
+    }
+
+    public void ajouterCarteEnMain(Carte c) {
+        this.cartesEnMain.add(c);
+    }
+
+    public void ajouterPlusieursCartesEnMain(ArrayList<Carte> c) {
+        this.cartesEnMain.addAll(c);
+    }
+
+    public void gagneUnPoint() {
+        this.score++;
     }
 
     public String getNom() {
         return nom;
     }
 
-    public Carte getCarte() {
-        return this.uneMain.get(this.uneMain.size()-1);
+    public int getScore() {
+        return score;
     }
 
-    public ArrayList<Carte> getCartes() {
-        return this.uneMain;
+    public boolean estHumain() {
+        return estHumain;
     }
 
-    public void retirerCarte() {
-        this.uneMain.remove(this.uneMain.size()-1);
+    public void setEstHumain(boolean estHumain) {
+        this.estHumain = estHumain;
     }
 
-    public void melangeJeu() {
-        // On commence par construire une liste pour recevoir les cartes
-        // mélangées
-        ArrayList<Carte> jeuMelange = new ArrayList<Carte>();
-        int n;
-        while (!this.uneMain.isEmpty()) {
-            // Calcul d'un indice aléatoire dans le jeu de cartes
-            n = (int) (Math.random() * this.uneMain.size());
-            // Déplacement d'une carte du jeu vers la liste mélangées
-            jeuMelange.add(this.uneMain.remove(n));
-        }
-        // Remplacement du jeu par le nouveau jeu mélangé
-        this.uneMain = jeuMelange;
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public ArrayList<Carte> getCartesEnMain() {
+        return cartesEnMain;
     }
 }

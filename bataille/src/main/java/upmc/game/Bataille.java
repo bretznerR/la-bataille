@@ -15,159 +15,216 @@
 package upmc.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Bataille {
-    public static void main(String[] args) {
 
-        JeuCartes jeuCartes = new JeuCartes();
-        jeuCartes.melangeJeu();
-        ArrayList<Carte> main1 = new ArrayList<Carte>();
-        ArrayList<Carte> main2 = new ArrayList<Carte>();
-        suffle(jeuCartes, main1, main2);
+  private static ArrayList<Carte> pioche;
+  private int scoreLimite;
+  private Scanner choixJoueur;
+  private Scanner choixJoueur2;
+  private Scanner choixJeu;
+  private Joueur j1;
+  private Joueur j2;
+  private int nbTour;
+  private Carte c1,c2;
+  private MenuPseudo menuPseudo;
+  private ArrayList<String> pseudos;
 
-        Scanner scanner = new Scanner(System.in);
+  public static void main(String[] args) {
+//    LectureFichier fichier = new LectureFichier();
+//    fichier.lirePseudo();
 
-        System.out.println("Nom du Joueur 1:");
-        String j1 = scanner.nextLine();
-        System.out.println("Nom du Joueur 2:");
-        String j2 = scanner.nextLine();
 
-        scanner.close();
+    Bataille b = new Bataille();
+    //Bataille b = new Bataille(10);
+    b.jouer();
+  }
 
-        Joueur joueur1 = new Joueur(main1, j1);
-        Joueur joueur2 = new Joueur(main1, j2);
-        joueur1.melangeJeu();
-        joueur2.melangeJeu();
+  public Bataille() {
+    this.scoreLimite = 20;
+    this.choixJoueur = new Scanner(System.in);
+    this.choixJoueur2 = new Scanner(System.in);
+    this.choixJeu = new Scanner(System.in);
+    this.j1 = new Joueur();
+    this.j2 = new Joueur();
+    this.nbTour = 1;
+    this.menuPseudo = new MenuPseudo();
+  }
 
-        System.out.println("----------------------------------------------------");
-        System.out.println("|                                                   |");
-        System.out.println("|                                                   |");
-        System.out.println("|              Joueur Versus Joueur                 |");
-        System.out.println("|                                                   |");
-        System.out.println("|                                                   |");
-        System.out.println("----------------------------------------------------");
+  public Bataille(int scoreLimite) {
+    this.scoreLimite = scoreLimite;
+    this.choixJoueur = new Scanner(System.in);
+    this.choixJoueur2 = new Scanner(System.in);
+    this.choixJeu = new Scanner(System.in);
+    this.j1 = new Joueur();
+    this.j2 = new Joueur();
+    this.nbTour = 1;
+  }
 
-        lancementBataille(joueur1, joueur2);
+  public void jouer() {
+    System.out.println("----------------------------------------------------");
+    System.out.println("|                                                   |");
+    System.out.println("|                                                   |");
+    System.out.println("|                Jeu de la bataille                 |");
+    System.out.println("|                                                   |");
+    System.out.println("|                                                   |");
+    System.out.println("----------------------------------------------------");
 
-        System.out.println(joueur1.getCartes().size());
-        System.out.println(joueur2.getCartes().size());
+    LecturePseudo lecturePseudo = this.menuPseudo.lirePseudo();
+    this.pseudos = lecturePseudo.lirePseudo();
+
+    this.j1.setNom(pseudos.get(0));
+    this.choixMultijoueur();
+    this.creerJeuDeCarte();
+    this.distributionDesCartes();
+
+    //La Partie
+    boolean partieFini=false;
+    while(!joueurAGagnerLaPartie(j1) && !joueurAGagnerLaPartie(j2) && !partieFini) {
+      partieFini = this.UnTour();
     }
+    this.affichageVainqueurDeLaPartie();
+  }
 
-    private static void suffle(JeuCartes jeuCartes, ArrayList<Carte> main1, ArrayList<Carte> main2) {
-        for (int i = 0; i < jeuCartes.getListeCartes().size(); i++) {
-            if (i % 2 == 0) {
-                main1.add(jeuCartes.getListeCartes().get(i));
-            }
-            else {
-                main2.add(jeuCartes.getListeCartes().get(i));
-            }
-        }
+  public boolean UnTour() {
+    System.out.println(" ============== Tour "+this.nbTour+" ==============");
+
+    //TOUR JOUEUR 1
+    this.c1 = tourJoueur(this.j1);
+    if(this.c1 == null) return true;
+
+    //TOUR JOUEUR 2
+    this.c2 = tourJoueur(this.j2);
+    if(this.c2 == null) return true;
+
+    if(this.c1.compareA(this.c2) > 0) { //Si la carte du joueur 1 est meilleur que celle du joueur 2 alors joueur 1 gagne la manche
+      this.j1.ajouterCarteEnMain(this.c1);
+      this.j1.ajouterCarteEnMain(this.c2);
+      System.out.println("-----------------------------------------");
+      System.out.println("\t\t\t" + j1.getNom()+" remporte le tour");
+      System.out.println("-----------------------------------------");
+      this.j1.gagneUnPoint();
     }
-
-    public static void lancementBataille(Joueur joueur1, Joueur joueur2) {
-        Scanner sc = new Scanner(System.in);
-        int choix = 0;
-        int compteur = 0;
-        while ((joueur1.getCartes().size() > 0) || (joueur2.getCartes().size() > 0)) {
-            System.out.println("----------------------------------------------------");
-            System.out.println("----------------------------------------------------");
-            System.out.println("|                                                   |");
-            System.out.println("|                                                   |");
-            System.out.println("|              Tour numéro : " + compteur +  "                      |");
-            System.out.println("|                                                   |");
-            System.out.println("|                                                   |");
-            System.out.println("----------------------------------------------------");
-            System.out.println("----------------------------------------------------");
-            System.out.println();
-            if (compteur%2 == 0) {
-                System.out.println(joueur1.getNom());
-            }
-            else {
-                System.out.println(joueur2.getNom());
-            }
-            if (joueur1.getCarte().superieureA(joueur2.getCarte())) {
-                System.out.println(joueur1.getNom() + " a pour carte : " + joueur1.getCarte());
-                System.out.println(joueur2.getNom() + " a pour carte : " + joueur2.getCarte());
-                System.out.println("\t " + joueur1.getNom() + " gagne ce tour");
-                System.out.println(joueur1.getCarte().superieureA(joueur2.getCarte()));
-
-                joueur1.getCartes().add(0, joueur2.getCarte());
-                joueur1.getCartes().add(0, joueur1.getCarte());
-                joueur1.retirerCarte();
-                joueur2.retirerCarte();
-                joueur1.setScore(joueur1.getScore()+1);
-            }
-            else if (joueur1.getCarte().superieureA(joueur2.getCarte())) {
-                System.out.println(joueur2.getNom() + " a pour carte : " + joueur2.getCarte());
-                System.out.println(joueur1.getNom() + " a pour carte : " + joueur1.getCarte());
-                System.out.println("\t " + joueur2.getNom() + " gagne ce tour");
-                System.out.println(joueur1.getCarte());
-                System.out.println(joueur2.getCarte());
-
-                joueur2.getCartes().add(0, joueur1.getCarte());
-                joueur2.getCartes().add(0, joueur2.getCarte());
-                joueur1.retirerCarte();
-                joueur1.retirerCarte();
-                joueur2.setScore(joueur2.getScore()+1);
-            }
-            else {
-                if (joueur1.getCartes().size() > 2 && joueur2.getCartes().size() > 2) {
-                    System.out.println(joueur1.getNom() + " a pour carte : " + joueur1.getCarte());
-                    System.out.println(joueur2.getNom() + " a pour carte : " + joueur2.getCarte());
-                    System.out.println("BATAILLE");
-                    batailleCondition(joueur1, joueur2);
-                }
-                else {
-                    break;
-                }
-
-            }
-            compteur++;
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        System.out.println("=================================================");
-        if (joueur1.getScore() > joueur2.getScore()) {
-            System.out.println(joueur1.getNom() + " a gagné ! Score de : " + joueur1.getScore());
-
-        }
-        else if (joueur2.getScore() > joueur1.getScore()) {
-            System.out.println(joueur2.getNom() + " a gagné ! Score de :  " + joueur2.getScore());
-        }
-        System.out.println("=================================================");
+    else if(this.c1.compareA(this.c2) < 0) { //Si la carte du joueur 2 est meilleur que celle du joueur 1 alors joueur 2 gagne la manche
+      this.j2.ajouterCarteEnMain(this.c1);
+      this.j2.ajouterCarteEnMain(this.c2);
+      System.out.println("-----------------------------------------");
+      System.out.println("\t\t\t" + j2.getNom()+" remporte le tour");
+      System.out.println("-----------------------------------------");
+      this.j2.gagneUnPoint();
+    } else {
+      this.grandeBataille();
     }
-    public static void batailleCondition(Joueur j1, Joueur j2) {
-        Carte tmp1 = j1.getCarte();
-        Carte tmp2 = j2.getCarte();
+    this.affichageDuScore();
+    this.nbTour++;
+    return false;
+  }
 
-        if (j1.getCartes().get(j1.getCartes().size() - 2).superieureA(j2.getCartes().get(j2.getCartes().size() - 2))) {
-            j1.getCartes().add(0, tmp2);
-            j1.getCartes().add(0, j2.getCartes().get(j2.getCartes().size() - 2));
-            j1.getCartes().add(0, j1.getCartes().get(j1.getCartes().size() - 2));
-            j1.getCartes().remove(j1.getCartes().get(j1.getCartes().size() - 2));
-            j2.getCartes().remove(tmp2);
-            j2.getCartes().remove(j2.getCartes().get(j2.getCartes().size() - 2));
-            j1.setScore(j1.getScore()+1);
-            System.out.println(j1.getNom() + " a pour carte : " + j1.getCarte());
-            System.out.println(j2.getNom() + " a pour carte : " + j2.getCarte());
-            System.out.println("\t " + j1.getNom() + " gagne ce tour");
-        }
-        else {
-            j2.getCartes().add(0, tmp1);
-            j2.getCartes().add(0, j1.getCartes().get(j1.getCartes().size() - 2));
-            j2.getCartes().add(0, j2.getCartes().get(j2.getCartes().size() - 2));
-            j2.getCartes().remove(j2.getCartes().get(j2.getCartes().size() - 2));
-            j1.getCartes().remove(tmp1);
-            j1.getCartes().remove(j1.getCartes().get(j1.getCartes().size() - 2));
-            j2.setScore(j2.getScore()+1);
-            System.out.println(j1.getNom() + " a pour carte : " + j1.getCarte());
-            System.out.println(j2.getNom() + " a pour carte : " + j2.getCarte());
-            System.out.println("\t " + j2.getNom() + " gagne ce tour");
-        }
+  public Carte tourJoueur(Joueur j) {
+    Carte c = null;
+    if(j.estHumain()) {
+      System.out.println("\n\t" + j.getNom()+", à votre tour : \n \t(1 ou autre) pour jouer , (2) pour quitter.");
+      String choixJoueur = choixJeu.nextLine();
+      if(choixJoueur.equals("2")) {
+        return c;
+      }
     }
+      c = j.jouerCarte();
+      System.out.println("\t\t" + j.getNom()+" joue la carte : \n\t\t\t"+c.toString());
+    return c;
+  }
+
+  public void distributionDesCartes() {
+    System.out.println("Distribution des cartes...");
+    this.j1.ajouterCarteEnMain(new Carte("Trefle",3)); // A RETIRER
+    this.j2.ajouterCarteEnMain(new Carte("Trefle",3)); // A RETIRER
+    while(pioche.size()!=0) {
+      int pos1 = (int) (Math.random() *(pioche.size()));
+      this.j1.ajouterCarteEnMain(pioche.get(pos1));
+      pioche.remove(pos1);
+      int pos2 = (int) (Math.random() *(pioche.size()));
+      this.j2.ajouterCarteEnMain(pioche.get(pos2));
+      this.pioche.remove(pos2);
+    }
+  }
+
+  public void creerJeuDeCarte() {
+    this.pioche = new ArrayList<Carte>();
+    for(int i=0 ; i<4 ; i++) { //Coeur , Carreau , Trefle , Pique : 4
+      for(int j=1 ; j<=13 ; j++) { //1 , 2 , 3 ... Valet , Reine , Roi : 13
+        pioche.add(new Carte(Carte.couleurs[i],j));
+      }
+    }
+  }
+
+  public void choixMultijoueur() {
+    if (pseudos.get(1).toString().equals("IA")) {
+      this.j2.setNom("IA");
+      this.j2.setEstHumain(false);
+    }
+    else {
+      this.j2.setNom(pseudos.get(1));
+    }
+  }
+
+  public void grandeBataille() {
+    ArrayList<Carte> tas = new ArrayList<Carte>();
+    tas.addAll(Arrays.asList(this.c1,this.c2));
+    System.out.println("\"\\t\\t\\t\" + BATAILLE !!!\n");
+    do {
+      //Joueur 1
+      this.c1 = this.tourJoueur(j1);
+      tas.add(this.c1);
+      //Joueur 2
+      this.c2 = this.tourJoueur(j2);
+      tas.add(this.c2);
+
+      if (this.c1.compareA(this.c2) > 0) {
+        j1.ajouterPlusieursCartesEnMain(tas);
+        System.out.println("-------------------------------------------");
+        System.out.println("\t\t\t" + this.j1.getNom()+" remporte la bataille");
+        System.out.println("-------------------------------------------\n");
+        j1.gagneUnPoint();
+      }
+      else if (this.c1.compareA(this.c2) < 0) {
+        this.j2.ajouterPlusieursCartesEnMain(tas);
+        System.out.println("-------------------------------------------");
+        System.out.println("\t\t\t" + this.j2.getNom()+" \t\tremporte la bataille");
+        System.out.println("-------------------------------------------\n");
+        j2.gagneUnPoint();
+      }
+    } while(this.c1.compareA(this.c2) == 0);
+  }
+
+  public boolean joueurAGagnerLaPartie(Joueur j) {
+    return j.getScore() >= this.scoreLimite;
+  }
+
+  public void affichageDuScore() {
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++");
+    System.out.println("\t\t\tScore de "+j1.getNom()+" : "+j1.getScore());
+    System.out.println("\t\t\tScore de "+j2.getNom()+" : "+j2.getScore());
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++\n");
+  }
+
+  public void affichageVainqueurDeLaPartie() {
+    System.out.println("----------------------------------------------------");
+    System.out.println("|                                                   |");
+    System.out.println("|                                                   |");
+    if(this.joueurAGagnerLaPartie(j1))
+      System.out.println("|\t\t\t\t" + this.j1.getNom()+" a gagné la partie !    \t\t|");
+    else {
+      if (j2.getNom().equals("IA")) {
+        System.out.println("|\t\t\t\t" + this.j2.getNom()+" a gagné la partie !    \t\t\t|");
+      }
+      else {
+        System.out.println("|\t\t\t\t" + this.j2.getNom()+" a gagné la partie !    \t\t|");
+      }
+    }
+    System.out.println("|                                                   |");
+    System.out.println("|                                                   |");
+    System.out.println("----------------------------------------------------");
+  }
 }
-

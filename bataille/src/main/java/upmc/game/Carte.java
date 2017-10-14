@@ -1,42 +1,38 @@
 package upmc.game;
 
+/**
+ * Created by Raphaël Bretzner on 12/09/2017.
+ */
 public class Carte {
 
-    private Couleur couleur;
-    private int valeur;
+    static String[] couleurs = {"pique","trefle","coeur","carreau"};
+    private String couleur;
+    private int nombre;
 
-    public Carte(Couleur c, int v) {
-        if (v >= 1 && v <= 13) {
-            this.valeur = v;
-        }
-        this.couleur = c;
+    public Carte(String couleur, int nombre) {
+        this.couleur = couleur;
+        this.nombre = nombre;
     }
 
-    public String getNomFromValue() {
-        if (valeur > 9) {
-            if (valeur == 10) return "valet";
-            if (valeur == 11) return "dame";
-            if (valeur == 12) return "roi";
-            if (valeur == 13 ) return "AS";
-        }
-        return null;
+    public int compareA(Carte c) {
+        return this.nombre - c.getNombre();
     }
 
-    public boolean superieureA(Carte c) {
-        return this.valeur > c.getValeur();
+    private String nomValeur() {
+        String nomValeur;
+        if(this.nombre == 11) nomValeur="valet";
+        else if(this.nombre == 12) nomValeur="reine";
+        else if(this.nombre ==13) nomValeur="roi";
+        else nomValeur = String.valueOf(this.nombre);
+        return nomValeur;
     }
 
+    public int getNombre() {
+        return nombre;
+    }
+
+    @Override
     public String toString() {
-        if (this.valeur > 9) {
-            return this.getNomFromValue() + " de " + this.couleur;
-        }
-        return this.valeur + " de " + this.couleur;
+        return this.nomValeur()+" de "+this.couleur;
     }
-
-    public int getValeur() {
-        return valeur;
-    }
-
-
-
 }
