@@ -74,4 +74,16 @@ public class Joueur {
     public ArrayList<Carte> getCartesEnMain() {
         return cartesEnMain;
     }
+
+    public boolean tireCarte() {
+        if (this.cartesEnMain.size() > 0) {
+            this.cartesEnMain.remove(this.cartesEnMain.size() - 1);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deckVide() {
+        return this.cartesEnMain.isEmpty();
+    }
 }
